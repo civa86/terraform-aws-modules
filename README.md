@@ -36,10 +36,10 @@ Resources:
 
 Configuration:
 
-| VARIABLE         | TYPE   | DEFAULT | DESCRIPTION              |
-| ---------------- | ------ | ------- | ------------------------ |
-| region           | string | -       | AWS Region               |
-| db_port          | number | 27017   | Mongo Server Port        |
-| db_root_username | string | root    | Mongo Superuser username |
-| db_root_password | string | root    | Mongo Superuser password |
-| tags             | map    | {}      | Map Object of tags       |
+| VARIABLE         | TYPE   | DEFAULT | DESCRIPTION                |
+| ---------------- | ------ | ------- | -------------------------- |
+| region           | string | -       | AWS Region                 |
+| db_port          | number | 27017   | MongoDB Server Port        |
+| db_root_username | string | root    | MongoDB Superuser username |
+| db_root_password | string | root    | MongoDB Superuser password |
+| tags             | map    | {}      | Map of AWS tags            |

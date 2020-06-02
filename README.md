@@ -1,9 +1,13 @@
 # Terraform AWS Modules
 
-Requirements:
+## Pre-requisites
+
+1. Access to an AWS account.
+2. `aws-cli` is installed and configured (see [the AWS CLI guide](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) for instructions).
+3. Terraform is installed (see [the Terraform website](https://www.terraform.io/) for instructions).
 
 - [Terraform 0.12](https://www.terraform.io/downloads.html)
-- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html)
+- [AWS CLI]()
 - IAM credential with right privileges
 
 ## Modules

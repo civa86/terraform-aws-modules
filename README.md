@@ -18,6 +18,28 @@ Requirements:
     └── mongodb         # MongoDB with ECS Fargate
 ```
 
+---
+
+### Docker Machine
+
+```bash
+cd examples/docker-machine
+ssh-keygen -f ./key.pem
+terraform init
+terraform apply
+```
+
+| VARIABLE        | TYPE   | DEFAULT  | DESCRIPTION             |
+| --------------- | ------ | -------- | ----------------------- |
+| region          | string | -        | AWS Region              |
+| project_name    | string | -        | Name of the project     |
+| ssh_private_key | string | -        | Path of SSH private Key |
+| ssh_public_key  | string | -        | Path of SSH public Key  |
+| instance_type   | string | t1.micro | Type of EC2 instance    |
+| tags            | map    | {}       | Map of AWS tags         |
+
+---
+
 ### MongoDB
 
 ```bash
@@ -33,21 +55,3 @@ terraform apply
 | db_root_username | string | root    | MongoDB Superuser username |
 | db_root_password | string | root    | MongoDB Superuser password |
 | tags             | map    | {}      | Map of AWS tags            |
-
-### Docker Machine
-
-```bash
-cd examples/docker-machine
-ssh-keygen -f ./key.pem
-terraform init
-terraform apply
-```
-
-| VARIABLE        | TYPE   | DEFAULT  | DESCRIPTION             |
-| --------------- | ------ | -------- | ----------------------- |
-| region          | string | -        | AWS Region              |
-| project_name    | string | -        | Name of the project     |
-| ssh_private_key | string | -        | Path of SSH provate Key |
-| ssh_public_key  | string | -        | Path of SSH public Key  |
-| instance_type   | string | t1.micro | Type of EC2 instance    |
-| tags            | map    | {}       | Map of AWS tags         |

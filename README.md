@@ -20,7 +20,7 @@ Requirements:
 
 ---
 
-### Docker Machine
+## Docker Machine
 
 ```bash
 cd examples/docker-machine
@@ -40,7 +40,7 @@ terraform apply
 
 ---
 
-### MongoDB
+## MongoDB
 
 ```bash
 cd examples/mongodb

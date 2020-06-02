@@ -95,8 +95,8 @@ resource "aws_ecs_service" "mongodb" {
   platform_version                   = "1.4.0"
   task_definition                    = aws_ecs_task_definition.mongodb.arn
   desired_count                      = 1
-  deployment_maximum_percent         = 200
-  deployment_minimum_healthy_percent = 100
+  deployment_maximum_percent         = 100
+  deployment_minimum_healthy_percent = 0
   force_new_deployment               = true
 
   network_configuration {

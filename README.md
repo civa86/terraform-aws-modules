@@ -11,12 +11,35 @@
 ```bash
 .
 ├── examples
+│   ├── ecs             # Example for ecs module
 │   ├── docker-machine  # Example for docker-machine module
 │   └── mongodb         # Example of mongodb module
 └── modules
+    ├── ecs             # ECS cluster with autoscaling
     ├── docker-machine  # Docker EC2 Instance
     └── mongodb         # MongoDB with ECS Fargate
 ```
+
+---
+
+## ECS
+
+```bash
+cd examples/ecs
+terraform init
+terraform apply
+```
+
+| VARIABLE                  | TYPE   | DEFAULT | DESCRIPTION                                     |
+| ------------------------- | ------ | ------- | ----------------------------------------------- |
+| region                    | string | -       | AWS Region                                      |
+| project_name              | string | -       | Name of the project                             |
+| cpu                       | string | 256     | Amount of CPU for ecs task                      |
+| memory                    | string | 512     | Amount of MEMORY for ecs task                   |
+| replicas                  | number | -       | Desired count for ecs task                      |
+| auto_scaling_max_replicas | number | -       | Maximum number of ecs task replicas             |
+| auto_scaling_max_cpu_util | number | -       | Average cpu tulizitation percentage for scaling |
+| tags                      | map    | {}      | Map of AWS tags                                 |
 
 ---
 

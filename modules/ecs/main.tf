@@ -47,7 +47,6 @@ TASK_CONTAINER_DEFINITION
 }
 
 resource "aws_ecs_service" "http_service" {
-  depends_on                         = [aws_lb_listener.entrypoint]
   name                               = local.http_service_name
   cluster                            = aws_ecs_cluster.default.id
   launch_type                        = "FARGATE"
@@ -71,6 +70,7 @@ resource "aws_ecs_service" "http_service" {
     container_port   = 8080
   }
 
+  depends_on = [aws_lb_listener.ssl_entrypoint]
 }
 
 resource "aws_appautoscaling_target" "default" {

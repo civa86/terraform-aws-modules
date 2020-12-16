@@ -1,19 +1,20 @@
 locals {
-  http_service_name = "${var.project_name}-http-${terraform.workspace}"
+  name         = "${var.project_name}-${terraform.workspace}"
+  service_name = "${local.name}-echo"
 }
 
 resource "aws_ecs_cluster" "default" {
-  name = "${var.project_name}-${terraform.workspace}"
+  name = local.name
   tags = var.tags
 }
 
-resource "aws_cloudwatch_log_group" "http" {
-  name = "/ecs/${var.project_name}-http-${terraform.workspace}"
+resource "aws_cloudwatch_log_group" "default" {
+  name = "/ecs/${local.name}"
   tags = var.tags
 }
 
-resource "aws_ecs_task_definition" "http" {
-  family                   = local.http_service_name
+resource "aws_ecs_task_definition" "echo" {
+  family                   = local.service_name
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   cpu                      = var.cpu
@@ -23,7 +24,7 @@ resource "aws_ecs_task_definition" "http" {
   container_definitions    = <<TASK_CONTAINER_DEFINITION
 [
   {
-    "name": "${local.http_service_name}",
+    "name": "${local.service_name}",
     "image": "mendhak/http-https-echo:15",
     "essential": true,
     "portMappings": [
@@ -33,10 +34,16 @@ resource "aws_ecs_task_definition" "http" {
         "hostPort": 8080
       }
     ],
+    "environment": [
+     {
+        "name": "JWT_HEADER",
+        "value": "x-amzn-oidc-accesstoken"
+     }
+    ],
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {
-        "awslogs-group": "${aws_cloudwatch_log_group.http.name}",
+        "awslogs-group": "${aws_cloudwatch_log_group.default.name}",
         "awslogs-region": "${var.region}",
         "awslogs-stream-prefix": "ecs"
       }
@@ -47,11 +54,11 @@ TASK_CONTAINER_DEFINITION
 }
 
 resource "aws_ecs_service" "http_service" {
-  name                               = local.http_service_name
+  name                               = local.service_name
   cluster                            = aws_ecs_cluster.default.id
   launch_type                        = "FARGATE"
   platform_version                   = "1.4.0"
-  task_definition                    = aws_ecs_task_definition.http.arn
+  task_definition                    = aws_ecs_task_definition.echo.arn
   desired_count                      = var.replicas
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
@@ -65,18 +72,18 @@ resource "aws_ecs_service" "http_service" {
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.default.id
-    container_name   = jsondecode(aws_ecs_task_definition.http.container_definitions)[0].name
+    target_group_arn = aws_lb_target_group.http.id
+    container_name   = jsondecode(aws_ecs_task_definition.echo.container_definitions)[0].name
     container_port   = 8080
   }
 
-  depends_on = [aws_lb_listener.ssl_entrypoint]
+  depends_on = [aws_lb_listener.entrypoint]
 }
 
 resource "aws_appautoscaling_target" "default" {
   max_capacity       = var.auto_scaling_max_replicas
   min_capacity       = var.replicas
-  resource_id        = "service/${aws_ecs_cluster.default.name}/${local.http_service_name}"
+  resource_id        = "service/${aws_ecs_cluster.default.name}/${local.service_name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 
@@ -84,7 +91,7 @@ resource "aws_appautoscaling_target" "default" {
 }
 
 resource "aws_appautoscaling_policy" "default" {
-  name               = "${local.http_service_name}-autoscaling-policy"
+  name               = "${local.service_name}-autoscaling-policy"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.default.resource_id
   scalable_dimension = aws_appautoscaling_target.default.scalable_dimension

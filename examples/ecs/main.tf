@@ -23,7 +23,7 @@ module "ecs" {
 
 output "alb_url" {
   value       = module.ecs.alb_url
-  description = "HTTP endpoint URL"
+  description = "ALB endpoint URL"
 }
 
 

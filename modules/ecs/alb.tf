@@ -1,5 +1,5 @@
 resource "aws_lb" "ingress" {
-  name               = "${var.project_name}-${terraform.workspace}"
+  name               = local.name
   internal           = false
   load_balancer_type = "application"
   subnets            = [aws_default_subnet.default_az1.id, aws_default_subnet.default_az2.id, aws_default_subnet.default_az3.id]
@@ -7,8 +7,8 @@ resource "aws_lb" "ingress" {
   tags               = var.tags
 }
 
-resource "aws_lb_target_group" "default" {
-  name        = "${var.project_name}-${terraform.workspace}-default"
+resource "aws_lb_target_group" "http" {
+  name        = "${local.name}-http"
   port        = 80
   protocol    = "HTTP"
   target_type = "ip"
@@ -19,7 +19,7 @@ resource "aws_lb_target_group" "default" {
   }
 
   health_check {
-    path = "/"
+    path = "/healthcheck"
   }
 
   tags = var.tags
@@ -31,7 +31,84 @@ resource "aws_lb_listener" "entrypoint" {
   protocol          = "HTTP"
 
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.default.arn
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
   }
 }
+
+resource "aws_lb_listener" "ssl_entrypoint" {
+  load_balancer_arn = aws_lb.ingress.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = aws_acm_certificate.default.arn
+
+  default_action {
+    type = "authenticate-cognito"
+
+    authenticate_cognito {
+      user_pool_arn              = aws_cognito_user_pool.default.arn
+      user_pool_client_id        = aws_cognito_user_pool_client.default.id
+      user_pool_domain           = aws_cognito_user_pool_domain.default.domain
+      on_unauthenticated_request = "authenticate"
+      scope                      = "openid"
+    }
+  }
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.http.arn
+  }
+}
+
+resource "aws_lb_listener_rule" "healthcheck" {
+  listener_arn = aws_lb_listener.ssl_entrypoint.arn
+  priority     = 100
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.http.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/healthcheck"]
+    }
+  }
+}
+resource "aws_lb_listener_rule" "api" {
+  listener_arn = aws_lb_listener.ssl_entrypoint.arn
+  priority     = 200
+
+  action {
+    type = "authenticate-cognito"
+
+    authenticate_cognito {
+      user_pool_arn              = aws_cognito_user_pool.default.arn
+      user_pool_client_id        = aws_cognito_user_pool_client.default.id
+      user_pool_domain           = aws_cognito_user_pool_domain.default.domain
+      on_unauthenticated_request = "deny"
+      scope                      = "openid"
+    }
+  }
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.http.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api", "/api/*"]
+    }
+  }
+}
+
+
+
+

@@ -41,6 +41,7 @@ resource "aws_lb_listener" "entrypoint" {
   }
 }
 
+# Any route will authenticate users with cognito at infrastructure level
 resource "aws_lb_listener" "ssl_entrypoint" {
   load_balancer_arn = aws_lb.ingress.arn
   port              = 443
@@ -66,36 +67,10 @@ resource "aws_lb_listener" "ssl_entrypoint" {
   }
 }
 
-resource "aws_lb_listener_rule" "healthcheck" {
-  listener_arn = aws_lb_listener.ssl_entrypoint.arn
-  priority     = 100
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.http.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["/healthcheck"]
-    }
-  }
-}
+# API will receive JWT and will authenticate and authorize users by themselves at application level
 resource "aws_lb_listener_rule" "api" {
   listener_arn = aws_lb_listener.ssl_entrypoint.arn
-  priority     = 200
-
-  action {
-    type = "authenticate-cognito"
-
-    authenticate_cognito {
-      user_pool_arn              = aws_cognito_user_pool.default.arn
-      user_pool_client_id        = aws_cognito_user_pool_client.default.id
-      user_pool_domain           = aws_cognito_user_pool_domain.default.domain
-      on_unauthenticated_request = "deny"
-      scope                      = "openid"
-    }
-  }
+  priority     = 100
 
   action {
     type             = "forward"

@@ -15,7 +15,7 @@
 │   ├── docker-machine  # Example for docker-machine module
 │   └── mongodb         # Example of mongodb module
 └── modules
-    ├── ecs             # ECS cluster with autoscaling
+    ├── ecs             # ECS cluster with Autoscaling and Cognito Authentication
     ├── docker-machine  # Docker EC2 Instance
     └── mongodb         # MongoDB with ECS Fargate
 ```

@@ -9,8 +9,18 @@ variable "env" {
 variable "availability_zones" {
   type = list(string)
 }
-# availability_zones       = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
+
 variable "tags" {
   type    = map(any)
   default = {}
+}
+
+variable "s3_vpc_gateway_endpoint" {
+  type    = bool
+  default = false
+}
+
+variable "dynamodb_vpc_gateway_endpoint" {
+  type    = bool
+  default = false
 }

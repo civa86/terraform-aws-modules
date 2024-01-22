@@ -3,6 +3,8 @@ locals {
   subnet_count    = length(var.availability_zones)
 }
 
+data "aws_region" "current" {}
+
 resource "aws_vpc" "vpc" {
   cidr_block           = "10.0.0.0/16"
   instance_tenancy     = "default"
@@ -100,4 +102,20 @@ resource "aws_route" "dmz_subnet_nat_route" {
   route_table_id         = aws_route_table.dmz_subnet_route.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.nat.id
+}
+
+resource "aws_vpc_endpoint" "s3" {
+  count           = var.s3_vpc_gateway_endpoint ? 1 : 0
+  vpc_id          = aws_vpc.vpc.id
+  service_name    = "com.amazonaws.${data.aws_region.current.name}.s3"
+  route_table_ids = [aws_route_table.dmz_subnet_route.id]
+  tags            = { "Name" = "${local.resource_prefix}-s3" }
+}
+
+resource "aws_vpc_endpoint" "dynamodb" {
+  count           = var.dynamodb_vpc_gateway_endpoint ? 1 : 0
+  vpc_id          = aws_vpc.vpc.id
+  service_name    = "com.amazonaws.${data.aws_region.current.name}.dynamodb"
+  route_table_ids = [aws_route_table.dmz_subnet_route.id]
+  tags            = { "Name" = "${local.resource_prefix}-dynamodb" }
 }

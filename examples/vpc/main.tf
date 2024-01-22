@@ -27,9 +27,11 @@ provider "aws" {
 }
 
 module "vpc" {
-  source             = "../../modules/vpc"
-  project            = local.project
-  env                = local.env
-  availability_zones = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
+  source                        = "../../modules/vpc"
+  project                       = local.project
+  env                           = local.env
+  availability_zones            = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
+  s3_vpc_gateway_endpoint       = true
+  dynamodb_vpc_gateway_endpoint = true
 }
 
